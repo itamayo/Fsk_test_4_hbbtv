@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//HbbTV//1.1.1//EN" "http://www.hbbtv.org/dtd/HbbTV-1.1.1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="Content-Type: application/vnd.hbbtv.xhtml+xml; charset=UTF-8" />
+	<meta http-equiv="Pragma" content="no-cache"/>
+	<meta http-equiv="Expires" content="0"/>
+	<title>FSK TEST SUIT</title>
+	<script src="js/jquery-1.8.1.min.js"> </script>
+	<script src="js/keycodes.js"></script>
+		<body onload="init();" style="background: transparent;">
+		<object id="appmgr" type="application/oipfApplicationManager" style="position: absolute; left: 0px; top: 0px; width: 0px; height: 0px;"></object>
+		<object id="audio" type="audio/mp4" ></object>
+		<object id="oipfcfg" type="application/oipfConfiguration" style="position: absolute; left: 0px; top: 0px; width: 0px; height: 0px;"></object>
+		<div id="init-banner" style="color:red;position:absolute;top:85%;left:25%;"> <img src="img/banner.png"/></div>
+		<div style="position:absolute;z-index:999;background:white;opacity:0.6;width:800px;height:600px;color:green;left:300px;top:60px;font-size:28pt;padding:15px;"> FSK TEST SUIT:<span id="log" style="color:red;opacity:1;font-size:16pt;margin-left:10px;"></span></div>
+	<script>
+		var start=0;
+		var end=0;
+		function init() {
+			document.onkeydown=eventHandler;
+			try {
+				var app = document.getElementById('appmgr').getOwnerApplication(document);
+				app.show(); 
+				
+				setKeyset(0x1+0x2+0x4+0x8+0x10+0x20+0x100);
+			} catch (e) {$("#log").append(e);}
+			
+
+		}
+		
+		function eventHandler (e){
+			
+			switch (e.keyCode){
+				case KEY_GREEN: 
+					
+				
+					createPlayer("shorturl.mp4");
+					
+					break;
+				case KEY_RED:
+					
+					createPlayer("longurl.mp4");
+					break;
+				
+			}
+			return false;
+		}
+		function createPlayer (audio){
+			
+			try {
+
+				var video1=document.getElementById('audio');
+				video1.type="audio/mp4";
+				video1.data="http://192.168.10.2/fsk_test/audio/"+audio;
+				video1.onPlayStateChange = function() { 
+				  		
+				  		if (video1.playState==5){
+				  			video=document.getElementById('audio');
+							video.stop();
+							video.type="video/broadcast";
+							video.bindToCurrentChannel();
+				  		}
+				  		if (video1.playState==1){
+				  			$("#log").append("<p> "+audio+" playing</p>");
+				  			
+				  		}
+				  		if (video1.playState==0){
+				  			$("#log").append("<p> broadcast playing </p>");
+				  			end=new Date().getTime();
+				  			$('#log').append("<p> Processing "+audio+" annoying time:"+(end-start)+"</p>");
+				  		}
+	 				
+				}
+				
+				video1.play(1);
+				start=new Date().getTime();
+			}
+			catch (e){
+				$("#log").append("<p>"+e+"error create player</p>");
+			}
+		}
+		</script></head>
+	
+</body>
+</html>
