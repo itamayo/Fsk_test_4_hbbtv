@@ -13,6 +13,7 @@
 		<object id="oipfcfg" type="application/oipfConfiguration" style="position: absolute; left: 0px; top: 0px; width: 0px; height: 0px;"></object>
 		<div id="init-banner" style="color:red;position:absolute;top:85%;left:25%;"> <img src="img/banner.png"/></div>
 		<div style="position:absolute;z-index:999;background:white;opacity:0.6;width:800px;height:600px;color:green;left:300px;top:60px;font-size:28pt;padding:15px;"> FSK TEST SUIT:<span id="log" style="color:red;opacity:1;font-size:16pt;margin-left:10px;"></span></div>
+		<object id="capobj" type="application/oipfCapabilities" style="position: absolute; left: 0px; top: 0px; width: 0px; height: 0px;"></object>
 	<script>
 		var start=0;
 		var end=0;
@@ -27,25 +28,31 @@
 			
 
 		}
-		
+		var device=getUrlVars()["device"];
 		function eventHandler (e){
 			
 			switch (e.keyCode){
 				case KEY_GREEN: 
 					
-				
-					createPlayer("shorturl.mp4");
-					
+				  if (device=="engel")
+					createPlayerEngel("shorturl.mp4");
+				  else 
+				  	createPlayerZas("shorturl.mp3");
 					break;
 				case KEY_RED:
 					
-					createPlayer("longurl.mp4");
+				  if (device=="engel")
+					createPlayerEngel("longurl.mp4");
+				  else 
+				  	createPlayerZas("longurl.mp3");
 					break;
+					
 				
 			}
 			return false;
 		}
-		function createPlayer (audio){
+		var time3=0;
+		function createPlayerEngel (audio){
 			
 			try {
 
@@ -55,13 +62,18 @@
 				video1.onPlayStateChange = function() { 
 				  		
 				  		if (video1.playState==5){
+				  			$("#log").append(""+(new Date().getTime()-time3));
 				  			video=document.getElementById('audio');
+							
 							video.stop();
-							video.type="video/broadcast";
-							video.bindToCurrentChannel();
+							
+							 video.type="video/broadcast";
+							 video.bindToCurrentChannel();
+							 video.play(1);
 				  		}
 				  		if (video1.playState==1){
 				  			$("#log").append("<p> "+audio+" playing</p>");
+				  			time3=new Date().getTime();
 				  			
 				  		}
 				  		if (video1.playState==0){
@@ -79,6 +91,69 @@
 				$("#log").append("<p>"+e+"error create player</p>");
 			}
 		}
+	  var video2=null;
+	  function createPlayerZas (audio){
+			
+			try {
+
+				if ($('#audio').length) {
+					$("#log").append("<p>removing</p>");
+					$('#audio').stop();
+					video1=document.getElementById("audio");
+					video1.stop();
+					document.body.removeChild(document.getElementById('audio'));
+
+				}
+				//video=document.getElementById("video");
+				//	video.stop();
+				video1=document.createElement("object");
+				video1.id="audio";
+				video1.type="audio/mp3";
+				video1.data="http://192.168.10.2/fsk_test/audio/"+audio;
+				$('body').append(video1);
+				video1.onPlayStateChange = function() { 
+				  		
+				  		if (video1.playState==5){
+				  			video=document.getElementById('audio');
+							video.stop();
+							$("#log").append("<p> play sound final</p>");
+							document.body.removeChild(video);
+							video2=document.createElement("object");
+							video2.id="audio";
+							video2.type="video/broadcast";
+							$('body').append(video2);
+							video2.bindToCurrentChannel();
+							video2.onPlayStateChange = function() {
+								if (video2.playState==2){
+									$("#log").append("<p>v:"+video2.playState+"</p>");
+				  					$("#log").append("<p> broadcast playing </p>");
+				  					end=new Date().getTime();
+				  					$('#log').append("<p> Processing "+audio+" annoying time:"+(end-start)+"</p>");
+				  				}
+							}
+				  		}
+				  		if (video1.playState==1){
+				  			$("#log").append("<p> "+audio+" playing2</p>");
+				  			
+				  		}
+				  
+	 				
+				}
+				
+				video1.play(1);
+				start=new Date().getTime();
+			}
+			catch (e){
+				$("#log").append("<p>"+e+"error create player</p>");
+			}
+		}
+	function getUrlVars() {
+    	var vars = {};
+    	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        	vars[key] = value;
+    	});
+    	return vars;
+}
 		</script></head>
 	
 </body>
